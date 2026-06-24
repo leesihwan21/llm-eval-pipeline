@@ -1,6 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import eval, models
+from app.database import engine
+from app import models as db_models
+
+db_models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="LLM Eval Pipeline",
