@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 const API_URL = "http://127.0.0.1:8000";
 
@@ -47,6 +48,12 @@ function App() {
     setLoading(false);
   };
 
+  const chartData = results.map((r) => ({
+    name: r.model_name,
+    점수: r.score,
+    응답시간: Math.round(r.latency_ms / 100) / 10,
+  }));
+
   return (
     <div className="min-h-screen bg-gray-950 text-white p-8">
       <div className="max-w-3xl mx-auto">
@@ -62,7 +69,6 @@ function App() {
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
           />
-
           <div className="flex gap-3 mt-4 mb-4">
             {MODELS.map((m) => (
               <button
@@ -78,7 +84,6 @@ function App() {
               </button>
             ))}
           </div>
-
           <button
             onClick={runEval}
             disabled={loading}
@@ -101,6 +106,21 @@ function App() {
                 <p className="text-gray-200 text-sm leading-relaxed">{r.response}</p>
               </div>
             ))}
+
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold text-purple-400 mb-3">📈 모델 비교 차트</h3>
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis dataKey="name" stroke="#9ca3af" />
+                  <YAxis stroke="#9ca3af" />
+                  <Tooltip contentStyle={{ background: "#1f2937", border: "none" }} />
+                  <Legend />
+                  <Bar dataKey="점수" fill="#8b5cf6" />
+                  <Bar dataKey="응답시간(초)" fill="#06b6d4" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         )}
 
