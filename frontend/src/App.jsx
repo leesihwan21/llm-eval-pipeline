@@ -3,8 +3,14 @@ import axios from "axios";
 
 const API_URL = "http://127.0.0.1:8000";
 
+const MODELS = [
+  { id: "claude-sonnet-4-6", label: "Claude Sonnet 4.6" },
+  { id: "gpt-4o-mini", label: "GPT-4o Mini" },
+];
+
 function App() {
   const [prompt, setPrompt] = useState("");
+  const [selectedModels, setSelectedModels] = useState(["claude-sonnet-4-6"]);
   const [results, setResults] = useState([]);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -18,13 +24,19 @@ function App() {
     fetchHistory();
   }, []);
 
+  const toggleModel = (id) => {
+    setSelectedModels((prev) =>
+      prev.includes(id) ? prev.filter((m) => m !== id) : [...prev, id]
+    );
+  };
+
   const runEval = async () => {
-    if (!prompt) return;
+    if (!prompt || selectedModels.length === 0) return;
     setLoading(true);
     try {
       const res = await axios.post(`${API_URL}/api/eval/run`, {
         prompt,
-        models: ["claude-sonnet-4-6"],
+        models: selectedModels,
         task_type: "general",
       });
       setResults(res.data.results);
@@ -50,10 +62,27 @@ function App() {
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
           />
+
+          <div className="flex gap-3 mt-4 mb-4">
+            {MODELS.map((m) => (
+              <button
+                key={m.id}
+                onClick={() => toggleModel(m.id)}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold border transition ${
+                  selectedModels.includes(m.id)
+                    ? "bg-purple-600 border-purple-500 text-white"
+                    : "bg-gray-800 border-gray-600 text-gray-400"
+                }`}
+              >
+                {m.label}
+              </button>
+            ))}
+          </div>
+
           <button
             onClick={runEval}
             disabled={loading}
-            className="mt-4 w-full py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-700 text-white font-semibold rounded-lg transition"
+            className="w-full py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-700 text-white font-semibold rounded-lg transition"
           >
             {loading ? "⏳ 평가 중..." : "🚀 평가 실행"}
           </button>
